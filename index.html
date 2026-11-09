@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI của tôi</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+</head>
+<body style="text-align:center;font-family:Arial;background:#eef2ff;padding:30px">
+
+  <h1>Ứng dụng AI nhận diện hình ảnh</h1>
+  <button onclick="start()">Bắt đầu nhận diện</button>
+  <div id="camera"></div>
+  <div id="result"></div>
+
+  <script>
+    async function start() {
+      const model = await tmImage.load(
+        "./model.json",
+        "./metadata.json"
+      );
+
+      const webcam = new tmImage.Webcam(300, 300, true);
+      await webcam.setup();
+      await webcam.play();
+
+      document.getElementById("camera").appendChild(webcam.canvas);
+
+      const result = document.getElementById("result");
+
+      async function loop() {
+        webcam.update();
+        const predictions = await model.predict(webcam.canvas);
+
+        result.innerHTML = predictions.map(p =>
+          `<p>${p.className}: ${(p.probability * 100).toFixed(2)}%</p>`
+        ).join("");
+
+        requestAnimationFrame(loop);
+      }
+
+      loop();
+    }
+  </script>
+</body>
+</html>
